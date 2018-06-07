@@ -13,7 +13,7 @@ class UserController extends Controller {
         }
         $user = new User();
         $user->username = $username;
-        $user->setPassword($pass);
+        $user->clearpw = $pass;
         $user->email = $email;
         if($email === null) {
             $user->email = \Yii::$app->params['adminEmail'];
