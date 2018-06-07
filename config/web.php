@@ -62,6 +62,12 @@ $config = [
             ],
         ],
         'db' => $db,
+        'formatter' => [
+            'currencyCode' => 'ARS',
+            'locale' => 'es-AR',
+            'decimalSeparator' => ',',
+            'thousandSeparator' => ' ',
+        ],
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
