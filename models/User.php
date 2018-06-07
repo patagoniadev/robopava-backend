@@ -8,6 +8,7 @@ use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
 use mdm\admin\components\Configs;
+use yii\helpers\ArrayHelper;
 
 /**
  * User model
@@ -22,6 +23,7 @@ use mdm\admin\components\Configs;
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
+ * @property string $home_url
  *
  * @property UserProfile $profile
  */
@@ -30,12 +32,21 @@ class User extends ActiveRecord implements IdentityInterface
     const STATUS_INACTIVE = 0;
     const STATUS_ACTIVE = 10;
 
+    public $clearpw;    // cleartext password
+    public $clearpwr;   // cleartext password repeat
+    public $clearpass;  // cleartext password actual para verificar en el cambio de clave.
+
+    /* @var array contiene las posibles páginas de inicio para el usuario */
+    public static $paginasInicio = [
+        '/site/index' => 'Index',
+    ];
+
     /**
      * @inheritdoc
      */
     public static function tableName()
     {
-        return 'user';
+        return Configs::instance()->userTable;
     }
 
     /**
@@ -56,7 +67,36 @@ class User extends ActiveRecord implements IdentityInterface
         return [
             ['status', 'default', 'value' => self::STATUS_ACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE]],
+            [['clearpw', 'clearpwr'], 'safe', 'on' => ['update']],
+            [['home_url'], 'string', 'max' => 250],
+            [['clearpw', 'clearpwr'], 'string', 'max' => 50, 'on' => ['insert']],
+            [['clearpass', 'clearpw', 'clearpwr'], 'required', 'on' => ['changepass']],
+            ['clearpw', 'compare', 'compareAttribute' => 'clearpwr', 'operator' => '===', 'type' => 'string', 'message' => 'Debe repetir la clave correctamente.', 'on' => ['insert', 'changepass', 'update']],
+            ['username', 'unique', 'message'=> 'Dicho nombre ya se encuentra utilizado.'],
         ];
+    }
+
+    public function beforeSave($insert)
+    {
+        if(!parent::beforeSave($insert)) {
+            return false;
+        }
+        
+        if ($this->isNewRecord) {
+            $this->auth_key = \Yii::$app->security->generateRandomString();
+            $this->setPassword($this->clearpw);
+        } else {
+            if($this->scenario === 'changepass') {
+                if($this->validatePassword($this->clearpass))
+                    $this->setPassword($this->clearpw);
+                else
+                    $this->addError('clearpass', 'Clave actual no valida');
+            } elseif ($this->scenario === 'update' && !empty($this->clearpw)) {
+                $this->setPassword($this->clearpw);
+            }
+        }
+
+        return !$this->hasErrors();
     }
 
     /**
@@ -72,7 +112,7 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public static function findIdentityByAccessToken($token, $type = null)
     {
-        return static::findOne(['access_token' => $token]);
+        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
     /**
@@ -167,6 +207,17 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Deactivates an user
+     *
+     * @return boolean is user is deactivated
+     */
+    public function deactivate()
+    {
+        $this->status = self::STATUS_INACTIVE;
+        return $this->save();
+    }
+
+    /**
      * Generates "remember me" authentication key
      */
     public function generateAuthKey()
@@ -189,4 +240,16 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $this->password_reset_token = null;
     }
+
+    public static function getDb()
+    {
+        return Configs::userDb();
+    }
+
+    public function getPaginaInicio()
+    {
+        $paginaInicio = ArrayHelper::getValue(static::$paginasInicio, $this->home_url, 'site/index');
+        return Url::to($paginaInicio);
+    }
+
 }
