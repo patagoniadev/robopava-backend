@@ -27,13 +27,11 @@ class UserTest extends \Codeception\Test\Unit
 
     public function testFindUserByAccessToken()
     {
-        return true;
-        /**
+        $this->markTestIncomplete('Falta acceso por access token en usuarios');
         expect_that($user = User::findIdentityByAccessToken('100-token'));
         expect($user->username)->equals('admin');
 
         expect_not(User::findIdentityByAccessToken('non-existing'));
-        */
     }
 
     public function testFindUserByUsername()
