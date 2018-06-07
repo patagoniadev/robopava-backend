@@ -3,9 +3,14 @@ namespace app\commands;
 
 use yii\console\Controller;
 use app\models\User;
+use yii\base\UserException;
 
 class UserController extends Controller {
     public function actionCreate($username, $pass, $email=null) {
+        if($user = User::findByUsername($username)) {
+            echo "El usuario $username ya existe\n";
+            return;
+        }
         $user = new User();
         $user->username = $username;
         $user->setPassword($pass);
