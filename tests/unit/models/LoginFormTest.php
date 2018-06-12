@@ -3,10 +3,21 @@
 namespace tests\models;
 
 use app\models\LoginForm;
+use app\tests\unit\fixtures\UserFixture;
 
 class LoginFormTest extends \Codeception\Test\Unit
 {
     private $model;
+
+    public function _fixtures()
+    {
+        return [
+            'users' => [
+                'class' => UserFixture::className(),
+                'dataFile' => codecept_data_dir() . 'user.php'
+            ]
+        ];
+    }
 
     protected function _after()
     {
