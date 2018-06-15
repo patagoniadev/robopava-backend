@@ -7,6 +7,7 @@ $config = [
     'id' => 'basic',
     'basePath' => dirname(__DIR__),
     'bootstrap' => ['log'],
+    'language' => 'es-AR',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
         '@npm'   => '@vendor/npm-asset',
@@ -30,8 +31,17 @@ $config = [
             // !!! insert a secret key in the following (if it is empty) - this is required by cookie validation
             'cookieValidationKey' => 'iV9oCoQkiLotM5YXhhfTgySuCw0Q_qpU',
         ],
+        'redis' => [
+            'class' => 'yii\redis\Connection',
+        ],
         'cache' => [
-            'class' => 'yii\caching\FileCache',
+            'class' => 'yii\redis\Cache',
+            'keyPrefix' => 'pava:cache:',
+        ],
+        'session' => [
+            'class' => 'yii\redis\Session',
+            'keyPrefix' => 'pava:session:',
+            'timeout' => 2592000, // 30 días
         ],
         'user' => [
             'identityClass' => 'app\models\User',
