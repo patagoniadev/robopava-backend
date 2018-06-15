@@ -26,11 +26,20 @@ $config = [
                 'application/json' => 'yii\web\JsonParser',
             ],
         ],
-        'cache' => [
-            'class' => 'yii\caching\FileCache',
-        ],
         'user' => [
             'identityClass' => 'app\models\User',
+        ],
+        'redis' => [
+            'class' => 'yii\redis\Connection',
+        ],
+        'cache' => [
+            'class' => 'yii\redis\Cache',
+            'keyPrefix' => 'pava:cache:api:',
+        ],
+        'session' => [
+            'class' => 'yii\redis\Session',
+            'keyPrefix' => 'pava:session:api:',
+            'timeout' => 2592000, // 30 días
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
