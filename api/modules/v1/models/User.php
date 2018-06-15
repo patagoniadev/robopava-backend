@@ -1,5 +1,4 @@
 <?php
-
 namespace app\api\modules\v1\models;
 
 use Yii;
@@ -9,11 +8,6 @@ use yii\web\Linkable;
 
 class User extends \app\models\User implements Linkable
 {
-    public static function tableName()
-    {
-        return 'user';
-    }
-
     public function fields()
     {
         return [
