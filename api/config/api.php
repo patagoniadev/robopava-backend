@@ -49,6 +49,12 @@ $config = [
                     'levels' => ['error', 'warning'],
                     'logFile' => '@api/runtime/logs/api.log',
                 ],
+                [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning'],
+                    'logFile' => '@api/runtime/logs/mylog.log',
+                    'logVars' => [],
+                ],
             ],
         ],
         'urlManager' => [
