@@ -64,6 +64,15 @@ $config = [
             'rules' => [
                 'GET v1/?' => 'v1',
                 ['class' => 'yii\rest\UrlRule', 'controller' => 'v1/user'],
+                [
+                    'class' => 'yii\rest\UrlRule',
+                    'controller' => 'v1/pava',
+                    'extraPatterns' => [
+                        'GET temperatura' => 'temperatura',
+                        'OPTIONS calentar' => 'calentar',
+                        'POST calentar' => 'calentar',
+                    ],
+                ],
             ],
         ],
         'db' => $db,
