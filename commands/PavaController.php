@@ -15,7 +15,8 @@ class PavaController extends Controller
     public function actionCalentar($temperatura)
     {
         $pava = new Pava();
-        $pava->calentar($temperatura);
+        $respuesta = $pava->calentar($temperatura);
+        Console::output($respuesta);
     }
 
     public function actionTemperatura()
