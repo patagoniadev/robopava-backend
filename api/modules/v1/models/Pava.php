@@ -12,10 +12,19 @@ use yii\helpers\VarDumper;
 
 class Pava extends \app\models\Pava implements Linkable
 {
+    const ENDPOINT_CALENTAR = '/calentar';
+    const ENDPOINT_TEMPERATURA = '/temperatura-actual';
+    const TIMEOUT = 5;
+
+    public $urlCalentar;
+    public $urlTemperatura;
+
     public function init()
     {
         parent::init();
-        $this->ip = '10.15.4.93';
+        $this->ip = 'localhost:6080';
+        $this->urlCalentar = 'http://' . $this->ip . self::ENDPOINT_CALENTAR;
+        $this->urlTemperatura = 'http://' . $this->ip . self::ENDPOINT_TEMPERATURA;
     }
 
     public function fields()
@@ -32,37 +41,47 @@ class Pava extends \app\models\Pava implements Linkable
         ];
     }
 
+    private function _makeRequest($method = 'POST', $url, $config)
+    {
+        $client = new Client();
+        $response = $client->request($method, $url, $config);
+        return $response;
+    }
+
     public function temperatura()
     {
-        $ip = $this->ip;
-        $client = new Client();
+        $url = $this->urlTemperatura;
+        $config = ['timeout' => self::TIMEOUT];
 
-        $response = $client->request(
-            'POST',
-            'http://' . $ip . '/temperatura-actual'
-        );
+        $cached = Yii::$app->cache->get('temperatura');
+        if($cached) {
+            return $cached;
+        }
 
-        $body = $response->getBody();
-        yii::debug($body);
+        $temperatura = (int) $this
+            ->_makeRequest('POST', $url, $config)
+            ->getBody()
+            ->getContents();
 
-        return $body;
+        yii::info('Nueva Temperatura: ' . $temperatura);
+        Yii::$app->cache->set('temperatura', $temperatura, 5);
+
+        return $temperatura;
     }
 
     public function calentar($temperatura)
     {
-        $ip = $this->ip;
-        $client = new Client();
+        $url = $this->urlCalentar;
 
-        $response = $client->request(
-            'POST',
-            'http://' . $ip . '/calentar',
-            [
-                'headers' => ['Content-Type' => 'x-www-form-urlencoded'],
-                'json' => ['temperatura' => $temperatura],
-                'timeout' => 5
-            ]
-        );
-        $body = $response->getBody();
-        yii::debug($body);
+        $config = [
+            'headers' => ['Content-Type' => 'x-www-form-urlencoded'],
+            'json' => ['temperatura' => $temperatura],
+            'timeout' => self::TIMEOUT
+        ];
+
+        $response = $this->_makeRequest('POST', $url, $config)->getBody();
+        yii::debug($response);
+
+        return $response;
     }
 }
